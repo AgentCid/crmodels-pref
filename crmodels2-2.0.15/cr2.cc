@@ -37,6 +37,8 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>
+
 #include "compile-flags.h"
 
 #include "crmodels2.h"
