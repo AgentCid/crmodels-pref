@@ -34,8 +34,8 @@ DEFS += -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
 CPPFLAGS += 
 LDFLAGS += 
 LIBS += -laspparser 
-CXXFLAGS += $(CPPFLAGS) -g -O2 $(DEFS)
-CFLAGS += $(CPPFLAGS) -g -O2 $(DEFS)
+CXXFLAGS += $(CPPFLAGS) -g -O0 $(DEFS) #was -O2
+CFLAGS += $(CPPFLAGS) -g -O0 $(DEFS) #was -O2
 RM=rm -f
 
 LBIN = bin
