@@ -1,0 +1,91 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(config.h.in)
+
+AC_CONFIG_HEADER(config.h)
+
+dnl >------ checks for programs ------<
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_INSTALL
+AC_PATH_PROG(MKATOMS, mkatoms)
+if test -z "$MKATOMS"; then
+   AC_MSG_ERROR([Unable to find the mkatoms program. Please install mkatoms.])
+fi
+AC_PATH_PROG(LPARSE, lparse)
+AC_PATH_PROG(SMODELS, smodels)
+AC_PATH_PROG(GRINGO, gringo)
+AC_PATH_PROG(CLASP, clasp)
+
+AC_CANONICAL_HOST
+case "$host" in
+    *-mingw*)
+      CFLAGS="$CFLAGS -static-libgcc -static"
+      CXXFLAGS="$CXXFLAGS -static-libgcc -static"
+      CPPFLAGS="$CPPFLAGS -static-libgcc -static"
+      LDFLAGS="$LDFLAGS -static-libgcc -static"
+      ;;
+esac
+
+dnl >------ checks for libraries ------<
+AC_SEARCH_LIBS([regcomp],[regex])
+
+dnl >------ checks for header files ------<
+AC_HEADER_STDC
+AC_CHECK_HEADERS(limits.h unistd.h dlfcn.h sys/resource.h signal.h)
+AC_HEADER_SYS_WAIT
+
+AC_CHECK_HEADER(aspparser/parser.h,,
+		AC_MSG_ERROR([Unable to find the aspparser header files. Please install dlv_rsig.]))
+AC_CHECK_DECLS(makeitem,,
+		AC_MSG_ERROR([aspparser library must be version 1.7.1 or later. Please update dlv_rsig.]),
+		[#include <aspparser/parser.h>])
+
+dnl >------ checks for typedefs ------<
+
+dnl >------ checks for structures ------<
+
+dnl >------ checks for compiler characteristics ------<
+
+dnl >------ checks for library functions ------<
+AC_CACHE_CHECK([for mkstemp],
+crmodels2_cv_func_mkstemp,
+[AC_TRY_LINK([#include <stdlib.h>
+#include <unistd.h>],
+[mkstemp("foo");],
+crmodels2_cv_func_mkstemp=yes, crmodels2_cv_func_mkstemp=no)])
+if test "$crmodels2_cv_func_mkstemp" = yes; then
+  AC_DEFINE(HAVE_MKSTEMP, 1, [Define if mkstemp is available.])
+fi
+
+AC_MSG_CHECKING(for mkstemps in libiberty)
+save_LIBS="$LIBS"
+LIBS="-liberty $LIBS"
+AC_LINK_IFELSE([
+ AC_LANG_PROGRAM([[int mkstemps (char *pattern, int suffix_len);]],
+    [[mkstemps("XXXXXX",0);]]
+ )],
+ [AC_MSG_RESULT(yes)
+  HAVE_MKSTEMPS=yes
+  AC_DEFINE(HAVE_MKSTEMPS, 1, [Define if mkstemps is available in libiberty.])
+ ],
+ [AC_MSG_RESULT(no)
+  HAVE_MKSTEMPS=no
+  LIBS="$save_LIBS"
+])
+
+AC_CHECK_LIB(aspparser,parser_version,,
+		AC_MSG_ERROR([Unable to find the aspparser library. Please install dlv_rsig.]))
+
+dnl >------ checks for system services ------<
+
+AC_OUTPUT(Makefile)
+
+if test -z "$LPARSE" -a -z "$GRINGO"; then
+   AC_MSG_WARN([Neither lparse nor gringo can be found. At least one must be installed for crmodels2 to work properly.])
+fi
+
+if test -z "$SMODELS" -a -z "$CLASP"; then
+   AC_MSG_WARN([Neither smodels nor clasp can be found. At least one must be installed for crmodels2 to work properly.])
+fi

@@ -1,0 +1,7 @@
+#ifndef CRMODELS_ALGORITHM_H
+#define CRMODELS_ALGORITHM_H
+
+
+
+#endif /* CRMODELS_ALGORITHM_H */
+
