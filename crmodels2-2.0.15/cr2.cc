@@ -1204,6 +1204,7 @@ void show_usage(void)
 	printf("                                 --save-search-state\n");
 	printf("           --mkatoms: format output using the mkatoms format\n");
 	printf("           -a: (in conjunction with --mkatoms) format output using the mkatoms -a format\n");
+	printf("           --non-exclusive: allows non-exclusive preferences\n");
 	printf("    cr2 -h\n");
 	printf("         prints this help\n");
 }
@@ -1256,6 +1257,7 @@ int main(int argc,char *argv[])
 	state_aware_solver=false;
 	MKATOMS=false;
 	AFLAG=false;
+	non_exclusive=false;
 	cputime_limit=0;
 	for(i=1;i<argc && argv[i][0]=='-' && strcmp(argv[i],"--")!=0;i++)
 	{	if (strcmp(argv[i],"--solver")==0)
@@ -1302,6 +1304,9 @@ int main(int argc,char *argv[])
 		else
 		if (strcmp(argv[i],"-a")==0)
 			AFLAG=true;
+		else
+		if (strcmp(argv[i],"--non-exclusive")==0)
+			non_exclusive=true;
 		else
 		{	printf("***error: unknown option \'%s\'\n\n",argv[i]);
 			show_usage();

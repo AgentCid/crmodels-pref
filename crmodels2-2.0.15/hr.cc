@@ -52,6 +52,8 @@
 
 using namespace std;
 
+bool non_exclusive;
+
 
 /* it will be better to put it in the aspparser library (parser.c) */
 struct rule *create_rule(int type,int head_size,int body_size)
@@ -458,26 +460,28 @@ void add_ispreferred_rules(struct node *program)
          cr__crname(R_internal1),
          cr__crname(R_internal2).
  */
-	r=create_rule(RULE_REGULAR,0,5);
-	a=makeitem(1);
-	a->relation=strdup(APPL);
-	a->args[0]=dup_item(v1);
-	r->body[0]=a;
-	a=makeitem(1);
-	a->relation=strdup(APPL);
-	a->args[0]=dup_item(v2);
-	r->body[1]=a;
-	a=makeitem(2);
-	a->relation=strdup(IS_PREF);
-	a->args[0]=dup_item(v1);
-	a->args[1]=dup_item(v2);
-	r->body[2]=a;
-	r->body[3]=dup_item(cr_name1);
-	r->body[4]=dup_item(cr_name2);
+	if(!non_exclusive){
+		r=create_rule(RULE_REGULAR,0,5);
+		a=makeitem(1);
+		a->relation=strdup(APPL);
+		a->args[0]=dup_item(v1);
+		r->body[0]=a;
+		a=makeitem(1);
+		a->relation=strdup(APPL);
+		a->args[0]=dup_item(v2);
+		r->body[1]=a;
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->body[2]=a;
+		r->body[3]=dup_item(cr_name1);
+		r->body[4]=dup_item(cr_name2);
 
-	program->next=(struct node *)calloc(1,sizeof(struct node));
-	program=program->next;
-	program->data=r;
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
+	}
 
 /*    :- not cr__bodytrue(R_internal),cr__applcr(R_internal),
          cr__crname(R_internal).
@@ -788,12 +792,14 @@ fprintf(stderr,"ispreferred2 relations DISABLED.\n");
 
 int main(int argc,char *argv[])
 {	vector<string> files;
+	int arg_offset=1; //used for advancing the arg count if -ne is used
 
 	fprintf(stderr,"hr/crmodels version "CRMODELS_VERSION"...\n");
 	fprintf(stderr,"parser version %s...\n\n",parser_version());
 
 	if (argc<=1 || strcmp(argv[1],"-h")==0 || (argc>2 && strcmp(argv[1],"--")==0))
-	{	printf("Usage:\n");
+	{	printf("Usage:  \n");
+		printf("       hr [-ne] <input>    use non-exclusive preferences for the following input\n");
 		printf("       hr --     processes input from console (CTRL+D to terminate input on Unix)\n");
 		printf("       hr <file1> [<file2> [...]]    processes input files file1,file2,...\n");
 		printf("       hr -h     prints this help\n\n");
@@ -801,8 +807,14 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 
-	if (strcmp(argv[1],"--")!=0)
-	{	for(int i=1;i<argc;i++)
+	non_exclusive=false;
+	if (strcmp(argv[1],"-ne")==0){
+		non_exclusive=true;
+		arg_offset++;
+	}
+
+	if (strcmp(argv[arg_offset],"--")!=0)
+	{	for(int i=arg_offset;i<argc;i++)
 			files.push_back(argv[i]);
 	}
 

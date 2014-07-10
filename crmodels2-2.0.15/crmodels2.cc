@@ -71,6 +71,7 @@ void show_usage(void)
 	printf("                                 --save-search-state\n");
 	printf("           --mkatoms: format output using the mkatoms format\n");
 	printf("           -a: (in conjunction with --mkatoms) format output using the mkatoms -a format\n");
+	printf("           --non-exclusive: allows non-exclusive preferences\n");
 	printf("    crmodels -h\n");
 	printf("         prints this help\n");
 }
@@ -100,6 +101,7 @@ int main(int argc,char *argv[])
 	bool cputime_aware_solver;
 	bool MKATOMS;
 	bool AFLAG;
+	bool non_exclusive;
 
 	fprintf(stderr,"crmodels version "CRMODELS_VERSION"\n"); 
 
@@ -117,6 +119,7 @@ int main(int argc,char *argv[])
 	AFLAG=false;
 	state_aware_solver=false;
 	cputime_aware_solver=false;
+	non_exclusive=false;
 	number_of_models=1;
 	cputime_limit="";
 	cputime_limit_val=0;
@@ -166,6 +169,9 @@ int main(int argc,char *argv[])
 		if (strcmp(argv[i],"-a")==0)
 			AFLAG=true;
 		else
+		if (strcmp(argv[i],"--non-exclusive")==0)
+			non_exclusive=true;
+		else
 		{	printf("***error: unknown option \'%s\'\n\n",argv[i]);
 			show_usage();
 			exit(1);
@@ -195,11 +201,12 @@ int main(int argc,char *argv[])
 	if (cputime_limit_val>0)
 		set_cputime_limit(cputime_limit_val);
 
-	sprintf(s,"hr ");
+	sprintf(s,"hr %s",
+			(non_exclusive ? "-ne ":""));
 	for(i=0;i<(int)files.size();i++)
 	{	sprintf(&s[strlen(s)],"%s ",files[i]);
 	}
-	sprintf(&s[strlen(s)],"| %s %s | cr2 --solver \"%s\" %s %s %s %s %s %s %d --",
+	sprintf(&s[strlen(s)],"| %s %s | cr2 --solver \"%s\" %s %s %s %s %s %s %s %d --",
 		grounder,
 		gopts,
 		solver,
@@ -208,6 +215,7 @@ int main(int argc,char *argv[])
 		(state_aware_solver ? "--state-aware-solver":""),
 		(MKATOMS ? "--mkatoms":""),
 		(AFLAG ? "-a":""),
+		(non_exclusive ? "--non-exclusive":""),
 		cr2opts,
 		number_of_models);
 
