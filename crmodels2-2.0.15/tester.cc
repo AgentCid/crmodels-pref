@@ -238,6 +238,8 @@ void tester::output(model *M)
 	{	char *name;
 
 		name=BASICDATA(n1)->value;
+		int fred = BASICDATA(n1)->value1;
+
 //		name=strstr(BASICDATA(n1)->value,"cr__applcr(");
 //		if(name!=NULL)
 		if (startsWith(name,APPLCR"("))
@@ -319,6 +321,7 @@ void tester::output(model *M)
 		for(n2=oispreferredlist.first();n2!= NULL  && BASICDATA(n2)->value!=NULL;n2 = n2->next)
 		{	char *ivalue;
 			char *cp;
+			int ind5;
 
 			cp = BASICDATA(n2)->value;
 			if (!look_for_j(cp,s)) continue;
@@ -336,32 +339,52 @@ void tester::output(model *M)
 			//printf("THE PTR@_>VALUE is %s\n",cp);
 	      		ind4 = get_ispreferred_index(cp);
 			if (ind4<0) continue;
-	      
-			//printf("THE APPLCR INDEX3 IS %d\n",ind3);
-			//printf("THE APPLCR INDEX4 IS %d\n",ind4);
-	      
-			// write the rule now
-			fprintf(fp,"1 ");
-			fprintf(fp,"%d ",store->get(store->DOMINATE));
-			fprintf(fp,"4 ");
-			fprintf(fp,"0 ");
-			fprintf(fp,"%d ",ind1);
-			fprintf(fp,"%d ",ind2);
-			fprintf(fp,"%d ",ind3);
-			fprintf(fp,"%d ",ind4);
-			fprintf(fp,"\n");
 
-/*
-			fprintf(stdout,"1 ");
-			fprintf(stdout,"%d ",store->get(store->DOMINATE));
-			fprintf(stdout,"4 ");
-			fprintf(stdout,"0 ");
-			fprintf(stdout,"%d ",ind1);
-			fprintf(stdout,"%d ",ind2);
-			fprintf(stdout,"%d ",ind3);
-			fprintf(stdout,"%d ",ind4);
-			fprintf(stdout,"\n");
-*/
+			// manual grounding of rule
+			//	dominates :- appl(I), not appl(J), o_appl(J), is_preferred(I,J), o_is_preferred(I,J).
+			if(non_exclusive){
+				//strip trailing ). from s
+				s[strlen(s)-2]=0;
+
+				//find the appl(J) atom
+				ind5 = appllist->find_arity1_atom(s);
+
+				fprintf(fp,"1 ");
+				fprintf(fp,"%d ",store->get(store->DOMINATE));
+				fprintf(fp,"5 ");
+				fprintf(fp,"1 ");
+				fprintf(fp,"%d ",ind5);
+				fprintf(fp,"%d ",ind1);
+				fprintf(fp,"%d ",ind2);
+				fprintf(fp,"%d ",ind3);
+				fprintf(fp,"%d ",ind4);
+				fprintf(fp,"\n");
+			}
+			else{
+				//printf("THE APPLCR INDEX3 IS %d\n",ind3);
+				//printf("THE APPLCR INDEX4 IS %d\n",ind4);
+
+				// write the rule now
+				fprintf(fp,"1 ");
+				fprintf(fp,"%d ",store->get(store->DOMINATE));
+				fprintf(fp,"4 ");
+				fprintf(fp,"0 ");
+				fprintf(fp,"%d ",ind1);
+				fprintf(fp,"%d ",ind2);
+				fprintf(fp,"%d ",ind3);
+				fprintf(fp,"%d ",ind4);
+				fprintf(fp,"\n");
+	/*
+				fprintf(stdout,"1 ");
+				fprintf(stdout,"%d ",store->get(store->DOMINATE));
+				fprintf(stdout,"4 ");
+				fprintf(stdout,"0 ");
+				fprintf(stdout,"%d ",ind1);
+				fprintf(stdout,"%d ",ind2);
+				fprintf(stdout,"%d ",ind3);
+				fprintf(stdout,"%d ",ind4);
+				fprintf(stdout,"\n");
+	*/		}
 		}
 	}
 

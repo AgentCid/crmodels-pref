@@ -30,6 +30,7 @@ public:
 	atom_store *store;
 
 	int use_pareto;
+	bool non_exclusive;
 
 	void output(model *M);
 };

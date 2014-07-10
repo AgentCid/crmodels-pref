@@ -1,0 +1,69 @@
+sick(lettuce).
+
+sick(okra).
+
+ :-
+  not cause(okra).
+
+ :-
+  not cause(lettuce).
+
+cause(lettuce) :-
+  rabbits.
+
+cause(okra) :-
+  ants.
+
+rabbits :-
+  cr__applcr(r1).
+
+ants :-
+  cr__applcr(r2).
+
+prefer(r1, r2).
+
+ { cr__applcr(R_internal) : cr__crname(R_internal) }  :-
+  not cr__stop.
+
+ { cr__stop } .
+
+#show cr__stop.
+
+#show cr__crname(_).
+
+#show cr__is_preferred(_,_).
+
+#show cr__appl(_).
+
+#show cr__applcr(_).
+
+#show cr__applx(_).
+
+#show cr__bodytrue(_).
+
+cr__is_preferred(R_internal1, R_internal2) :-
+  cr__crname(R_internal1), cr__crname(R_internal2), prefer(R_internal1, R_internal2).
+
+cr__appl(R_internal) :-
+  cr__crname(R_internal), cr__applcr(R_internal).
+
+cr__appl(R_internal) :-
+  cr__crname(R_internal), cr__applx(R_internal).
+
+ :-
+  cr__is_preferred(R_internal, R_internal), cr__crname(R_internal).
+
+cr__is_preferred(R_internal1, R_internal2) :-
+  prefer(R_internal1, R_internal3), cr__is_preferred(R_internal3, R_internal2), cr__crname(R_internal1), cr__crname(R_internal2), cr__crname(R_internal3).
+
+ :-
+  not cr__bodytrue(R_internal), cr__applcr(R_internal), cr__crname(R_internal).
+
+cr__crname(r1).
+
+cr__bodytrue(r1).
+
+cr__crname(r2).
+
+cr__bodytrue(r2).
+

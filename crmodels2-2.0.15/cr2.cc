@@ -80,6 +80,7 @@ bool state_aware_solver;
 const char *solver_state_opt="";
 bool MKATOMS;
 bool AFLAG;
+bool non_exclusive;
 
 
 atom_store store;
@@ -1386,6 +1387,7 @@ int main(int argc,char *argv[])
 	t.ispreferredlist=&P->a->ispreferredlist;
 	t.store=&store;
 	t.use_pareto=use_pareto;
+	t.non_exclusive=non_exclusive;
 
 	M=NULL;
 
