@@ -282,14 +282,40 @@ void add_choice_rule(struct node *program)
     cr__appl(R_internal) :- cr__crname(R_internal), cr__applcr(R_internal).
     cr__appl(R_internal) :- cr__crname(R_internal), cr__applx(R_internal).
 
+	<if no special properties (exclusivity, non transitivity)>
     :- cr__is_preferred(R_internal,R_internal),cr__crname(R_internal).
 
+	<if no other transitivity is defined>
     cr__is_preferred(R_internal1,R_internal2) :-
         prefer(R_internal1,R_internal3),
 	cr__is_preferred(R_internal3,R_internal2),
 	cr__crname(R_internal1),
 	cr__crname(R_internal2),
 	cr__crname(R_internal3).
+
+	<if ip-transitivity is defined>
+	 	cr__is_preferred(R_internal1,R_internal2) :-
+	  not prefer(R_internal1,R_internal3),
+	  not prefer(R_internal3,R_internal1),
+	  cr__is_preferred(R_internal3,R_internal2),
+    cr__crname(R_internal1),
+    cr__crname(R_internal2),
+    cr__crname(R_internal3),
+    R_internal1 != R_internal2,
+    R_internal2 != R_internal3,
+    R_internal1 != R_internal3.
+
+    <if pi-transitivity is defined>
+    cr__is_preferred(R_internal1,R_internal2) :-
+	  not prefer(R_internal2,R_internal3),
+	  not prefer(R_internal3,R_internal2),
+	  cr__is_preferred(R_internal1,R_internal3),
+	cr__crname(R_internal1),
+	cr__crname(R_internal2),
+	cr__crname(R_internal3),
+	R_internal1 != R_internal2,
+	R_internal2 != R_internal3,
+	R_internal1 != R_internal3.
 
 	<if exclusive>
     :- cr__appl(R_internal1),cr__appl(R_internal2),
@@ -835,6 +861,7 @@ void make_hr(vector<string> flist,string ofile,string efile)
 	 */
 	add_choice_rule(program);
 
+
 	/* 2. CreateIs_preferredRules()
 	      Add rules:
 
@@ -865,22 +892,22 @@ void make_hr(vector<string> flist,string ofile,string efile)
 		cr__crname(R_internal3).
 
 		<if ip-transitivity is defined>
- 	 	cr__is_preferred(R_internal1,R_internal2) :-
-  	      cr__is_preferred(R_internal3,R_internal2),
-		  not prefer(R_internal1,R_internal3),
-		  not prefer(R_internal3,R_internal1),
-	    cr__crname(R_internal1),
-	    cr__crname(R_internal2),
-	    cr__crname(R_internal3),
-	    R_internal1 != R_internal2,
-	    R_internal2 != R_internal3,
-	    R_internal1 != R_internal3.
+		 cr__is_preferred(R_internal1,R_internal2) :-
+		   not prefer(R_internal1,R_internal3),
+		   not prefer(R_internal3,R_internal1),
+		   cr__is_preferred(R_internal3,R_internal2),
+	     cr__crname(R_internal1),
+	     cr__crname(R_internal2),
+	     cr__crname(R_internal3),
+	     R_internal1 != R_internal2,
+	     R_internal2 != R_internal3,
+	     R_internal1 != R_internal3.
 
 	    <if pi-transitivity is defined>
 	    cr__is_preferred(R_internal1,R_internal2) :-
-	 	  cr__is_preferred(R_internal1,R_internal3),
 		  not prefer(R_internal2,R_internal3),
 		  not prefer(R_internal3,R_internal2),
+		  cr__is_preferred(R_internal1,R_internal3),
 		cr__crname(R_internal1),
 		cr__crname(R_internal2),
 		cr__crname(R_internal3),
