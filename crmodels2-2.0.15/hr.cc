@@ -984,11 +984,11 @@ void show_usage(void){
 	printf("Usage:  \n");
 	printf("       hr [<options>] <input> \n");
 	printf("		 Options:\n");
-	printf("       	   -ne: use non-exclusive preferences for the following input\n");
+	printf("       	   --non-exclusive: use non-exclusive preferences\n");
 	printf("              at most one of the following transitivity options can be used:\n");
-	printf("       	   		-nt: use non-transitive preferences for the following input\n");
-	printf("       	   		-ip: use IP-transitive preferences for the following input\n");
-	printf("       	   		-pi: use PI-transitive preferences for the following input\n");
+	printf("       	   		--non-transitive: use non-transitive preferences\n");
+	printf("       	   		--ip-transitive: use IP-transitive preferences\n");
+	printf("       	   		--pi-transitive: use PI-transitive preferences\n");
 	printf("		 Inputs:");
 	printf("           -- :  processes input from console (CTRL+D to terminate input on Unix)\n");
 	printf("           <file1> [<file2> [...]] :  processes input files file1,file2,...\n");
@@ -1018,13 +1018,13 @@ int main(int argc,char *argv[])
 	ip_transitive=false;
 	pi_transitive=false;
 	for(i=1;i<argc && argv[i][0]=='-' && strcmp(argv[i],"--")!=0;i++){
-		if (strcmp(argv[i],"-ne")==0){
+		if (strcmp(argv[i],"--non-exclusive")==0){
 				non_exclusive=true;
 			}
 		else
-		if (strcmp(argv[i],"-nt")==0){
+		if (strcmp(argv[i],"--non-transitive")==0){
 			if(ip_transitive||pi_transitive){
-				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
 				show_usage();
 				exit(1);
 			}
@@ -1032,9 +1032,9 @@ int main(int argc,char *argv[])
 				non_transitive=true;
 			}
 		else
-		if (strcmp(argv[i],"-ip")==0){
+		if (strcmp(argv[i],"--ip-transitive")==0){
 			if(non_transitive||pi_transitive){
-				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
 				show_usage();
 				exit(1);
 			}
@@ -1042,9 +1042,9 @@ int main(int argc,char *argv[])
 				ip_transitive=true;
 			}
 		else
-		if (strcmp(argv[i],"-pi")==0){
-			if(non_transitive|ip_transitive){
-				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+		if (strcmp(argv[i],"--pi-transitive")==0){
+			if(non_transitive||ip_transitive){
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
 				show_usage();
 				exit(1);
 			}

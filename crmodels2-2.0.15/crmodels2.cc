@@ -72,6 +72,10 @@ void show_usage(void)
 	printf("           --mkatoms: format output using the mkatoms format\n");
 	printf("           -a: (in conjunction with --mkatoms) format output using the mkatoms -a format\n");
 	printf("           --non-exclusive: allows non-exclusive preferences\n");
+	printf("              at most one of the following transitivity options can be used:\n");
+	printf("       	   		--non-transitive: use non-transitive preferences\n");
+	printf("       	   		--ip-transitive: use IP-transitive preferences\n");
+	printf("       	   		--pi-transitive: use PI-transitive preferences\n");
 	printf("    crmodels -h\n");
 	printf("         prints this help\n");
 }
@@ -102,6 +106,9 @@ int main(int argc,char *argv[])
 	bool MKATOMS;
 	bool AFLAG;
 	bool non_exclusive;
+	bool non_transitive;
+	bool ip_transitive;
+	bool pi_transitive;
 
 	fprintf(stderr,"crmodels version "CRMODELS_VERSION"\n"); 
 
@@ -120,6 +127,9 @@ int main(int argc,char *argv[])
 	state_aware_solver=false;
 	cputime_aware_solver=false;
 	non_exclusive=false;
+	non_transitive=false;
+	ip_transitive=false;
+	pi_transitive=false;
 	number_of_models=1;
 	cputime_limit="";
 	cputime_limit_val=0;
@@ -172,6 +182,35 @@ int main(int argc,char *argv[])
 		if (strcmp(argv[i],"--non-exclusive")==0)
 			non_exclusive=true;
 		else
+		if (strcmp(argv[i],"--non-transitive")==0){
+			if(ip_transitive||pi_transitive){
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				non_transitive=true;
+			}
+		else
+		if (strcmp(argv[i],"--ip-transitive")==0){
+			if(non_transitive||pi_transitive){
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				ip_transitive=true;
+			}
+		else
+		if (strcmp(argv[i],"--pi-transitive")==0){
+			if(non_transitive||ip_transitive){
+				printf("***error: --non-transitive, --ip-transitive, and --pi-transitive are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				pi_transitive=true;
+			}
 		{	printf("***error: unknown option \'%s\'\n\n",argv[i]);
 			show_usage();
 			exit(1);
@@ -201,12 +240,15 @@ int main(int argc,char *argv[])
 	if (cputime_limit_val>0)
 		set_cputime_limit(cputime_limit_val);
 
-	sprintf(s,"hr %s",
-			(non_exclusive ? "-ne ":""));
+	sprintf(s,"./hr %s %s %s %s ",
+			(non_exclusive ? "--non-exclusive":""),
+			(non_transitive ? "--non-transitive":""),
+			(ip_transitive ? "--ip-transitive":""),
+			(pi_transitive ? "--pi-transitive":""));
 	for(i=0;i<(int)files.size();i++)
 	{	sprintf(&s[strlen(s)],"%s ",files[i]);
 	}
-	sprintf(&s[strlen(s)],"| %s %s | cr2 --solver \"%s\" %s %s %s %s %s %s %s %d --",
+	sprintf(&s[strlen(s)],"| %s %s | ./cr2 --solver \"%s\" %s %s %s %s %s %s %s %d --",
 		grounder,
 		gopts,
 		solver,
