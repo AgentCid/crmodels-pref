@@ -53,6 +53,9 @@
 using namespace std;
 
 bool non_exclusive;
+bool non_transitive;
+bool ip_transitive;
+bool pi_transitive;
 
 
 /* it will be better to put it in the aspparser library (parser.c) */
@@ -288,6 +291,7 @@ void add_choice_rule(struct node *program)
 	cr__crname(R_internal2),
 	cr__crname(R_internal3).
 
+	<if exclusive>
     :- cr__appl(R_internal1),cr__appl(R_internal2),
        cr__is_preferred(R_internal1,R_internal2),
        cr__crname(R_internal1),
@@ -409,53 +413,59 @@ void add_ispreferred_rules(struct node *program)
 	program=program->next;
 	program->data=r;
 
-/*    :- cr__is_preferred(R_internal,R_internal),cr__crname(R_internal).
+/* <if no special properties (exclusivity, modified transitivity)>
+ *   :- cr__is_preferred(R_internal,R_internal),cr__crname(R_internal).
  */
-	r=create_rule(RULE_REGULAR,0,2);
-	a=makeitem(2);
-	a->relation=strdup(IS_PREF);
-	a->args[0]=dup_item(v);
-	a->args[1]=dup_item(v);
-	r->body[0]=a;
-	r->body[1]=dup_item(cr_name);
+	if(!non_exclusive&&!non_transitive&&!ip_transitive&&!pi_transitive){
+		r=create_rule(RULE_REGULAR,0,2);
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v);
+		a->args[1]=dup_item(v);
+		r->body[0]=a;
+		r->body[1]=dup_item(cr_name);
 
-	program->next=(struct node *)calloc(1,sizeof(struct node));
-	program=program->next;
-	program->data=r;
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
+	}
 
-/*    cr__is_preferred(R_internal1,R_internal2) :-
+/*	<if no other transitivity is defined>
+ * cr__is_preferred(R_internal1,R_internal2) :-
           prefer(R_internal1,R_internal3),
 	  cr__is_preferred(R_internal3,R_internal2),
 	  cr__crname(R_internal1),
 	  cr__crname(R_internal2),
 	  cr__crname(R_internal3).
  */
-	r=create_rule(RULE_REGULAR,1,5);
-	a=makeitem(2);
-	a->relation=strdup(IS_PREF);
-	a->args[0]=dup_item(v1);
-	a->args[1]=dup_item(v2);
-	r->head[0]=a;
-	a=makeitem(2);
-	a->relation=strdup(PREFER);	
-	a->args[0]=dup_item(v1);
-	a->args[1]=dup_item(v3);
-	r->body[0]=a;
-	a=makeitem(2);
-	a->relation=strdup(IS_PREF);
-	a->args[0]=dup_item(v3);
-	a->args[1]=dup_item(v2);
-	r->body[1]=a;
-	r->body[2]=dup_item(cr_name1);
-	r->body[3]=dup_item(cr_name2);
-	r->body[4]=dup_item(cr_name3);
+	if(!non_transitive&&!ip_transitive&&!pi_transitive){
+		r=create_rule(RULE_REGULAR,1,5);
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->head[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(PREFER);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v3);
+		r->body[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v3);
+		a->args[1]=dup_item(v2);
+		r->body[1]=a;
+		r->body[2]=dup_item(cr_name1);
+		r->body[3]=dup_item(cr_name2);
+		r->body[4]=dup_item(cr_name3);
 
-	program->next=(struct node *)calloc(1,sizeof(struct node));
-	program=program->next;
-	program->data=r;
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
+	}
 
-
-/*    :- cr__appl(R_internal1),cr__appl(R_internal2),
+/* <if exclusive>
+ * :- cr__appl(R_internal1),cr__appl(R_internal2),
          cr__is_preferred(R_internal1,R_internal2),
          cr__crname(R_internal1),
          cr__crname(R_internal2).
@@ -483,24 +493,24 @@ void add_ispreferred_rules(struct node *program)
 		program->data=r;
 	}
 
-/*    :- not cr__bodytrue(R_internal),cr__applcr(R_internal),
+/* :- not cr__bodytrue(R_internal),cr__applcr(R_internal),
          cr__crname(R_internal).
 */
-	r=create_rule(RULE_REGULAR,0,3);
-	a=makeitem(1);
-	a->relation=strdup(BODYTRUE);
-	a->args[0]=dup_item(v);
-	a->default_negation=1;
-	r->body[0]=a;
-	a=makeitem(1);
-	a->relation=strdup(APPLCR);
-	a->args[0]=dup_item(v);
-	r->body[1]=a;
-	r->body[2]=dup_item(cr_name);
+		r=create_rule(RULE_REGULAR,0,3);
+		a=makeitem(1);
+		a->relation=strdup(BODYTRUE);
+		a->args[0]=dup_item(v);
+		a->default_negation=1;
+		r->body[0]=a;
+		a=makeitem(1);
+		a->relation=strdup(APPLCR);
+		a->args[0]=dup_item(v);
+		r->body[1]=a;
+		r->body[2]=dup_item(cr_name);
 
-	program->next=(struct node *)calloc(1,sizeof(struct node));
-	program=program->next;
-	program->data=r;
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
 }
 
 /* 3. CreateIs_preferred2Rules()
@@ -717,6 +727,7 @@ void make_hr(vector<string> flist,string ofile,string efile)
 	    cr__appl(R_internal) :- cr__crname(R_internal), cr__applcr(R_internal).
 	    cr__appl(R_internal) :- cr__crname(R_internal), cr__applx(R_internal).
 
+		<if no special properties (exclusivity, non transitivity)>
 	    :- cr__is_preferred(R_internal,R_internal),cr__crname(R_internal).
 
 	    cr__is_preferred(R_internal1,R_internal2) :-
@@ -726,6 +737,7 @@ void make_hr(vector<string> flist,string ofile,string efile)
 		cr__crname(R_internal2),
 		cr__crname(R_internal3).
 
+		<if exclusive>
 	    :- cr__appl(R_internal1),cr__appl(R_internal2),
 	       cr__is_preferred(R_internal1,R_internal2),
 	       cr__crname(R_internal1),
@@ -790,32 +802,83 @@ fprintf(stderr,"ispreferred2 relations DISABLED.\n");
 	if (fpe!=stderr) fclose(fpe);
 }
 
+void show_usage(void){
+	printf("Usage:  \n");
+	printf("       hr [<options>] <input> \n");
+	printf("		 Options:\n");
+	printf("       	   -ne: use non-exclusive preferences for the following input\n");
+	printf("              at most one of the following transitivity options can be used:\n");
+	printf("       	   		-nt: use non-transitive preferences for the following input\n");
+	printf("       	   		-ip: use IP-transitive preferences for the following input\n");
+	printf("       	   		-pi: use PI-transitive preferences for the following input\n");
+	printf("		 Inputs:");
+	printf("           -- :  processes input from console (CTRL+D to terminate input on Unix)\n");
+	printf("           <file1> [<file2> [...]] :  processes input files file1,file2,...\n");
+	printf("       hr -h\n");
+	printf("           prints this help\n\n");
+}
+
 int main(int argc,char *argv[])
 {	vector<string> files;
-	int arg_offset=1; //used for advancing the arg count if -ne is used
+	int i;
 
 	fprintf(stderr,"hr/crmodels version "CRMODELS_VERSION"...\n");
 	fprintf(stderr,"parser version %s...\n\n",parser_version());
 
-	if (argc<=1 || strcmp(argv[1],"-h")==0 || (argc>2 && strcmp(argv[1],"--")==0))
-	{	printf("Usage:  \n");
-		printf("       hr [-ne] <input>    use non-exclusive preferences for the following input\n");
-		printf("       hr --     processes input from console (CTRL+D to terminate input on Unix)\n");
-		printf("       hr <file1> [<file2> [...]]    processes input files file1,file2,...\n");
-		printf("       hr -h     prints this help\n\n");
-
+	if (argc==1)
+	{	show_usage();
 		exit(1);
 	}
 
-	non_exclusive=false;
-	if (strcmp(argv[1],"-ne")==0){
-		non_exclusive=true;
-		arg_offset++;
+	if (strcmp(argv[1],"-h")==0)
+	{	show_usage();
+		exit(0);
 	}
 
-	if (strcmp(argv[arg_offset],"--")!=0)
-	{	for(int i=arg_offset;i<argc;i++)
-			files.push_back(argv[i]);
+	non_exclusive=false;
+	non_transitive=false;
+	ip_transitive=false;
+	pi_transitive=false;
+	for(i=1;i<argc && argv[i][0]=='-' && strcmp(argv[i],"--")!=0;i++){
+		if (strcmp(argv[i],"-ne")==0){
+				non_exclusive=true;
+			}
+		else
+		if (strcmp(argv[i],"-nt")==0){
+			if(ip_transitive||pi_transitive){
+				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				non_transitive=true;
+			}
+		else
+		if (strcmp(argv[i],"-ip")==0){
+			if(non_transitive||pi_transitive){
+				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				ip_transitive=true;
+			}
+		else
+		if (strcmp(argv[i],"-pi")==0){
+			if(non_transitive|ip_transitive){
+				fprintf(stderr, "ERROR: -nt, -ip, and -pi are exclusive options\n");
+				show_usage();
+				exit(1);
+			}
+			else
+				pi_transitive=true;
+			}
+	}
+
+
+	if (strcmp(argv[i],"--")!=0)
+	{	for(int j=i;j<argc;j++)
+			files.push_back(argv[j]);
 	}
 
 	make_hr(files,"-","-");
