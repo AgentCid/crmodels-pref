@@ -15,6 +15,9 @@
 #define PREFER "prefer"
 #define PREFER2 "prefer2"
 
+#define NOT_PREFER "not prefer"
+#define NOT_EQ "!="
+
 /*
 struct relinfo
 {	char *name;

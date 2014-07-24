@@ -464,6 +464,132 @@ void add_ispreferred_rules(struct node *program)
 		program->data=r;
 	}
 
+/*	<if ip-transitivity is defined>
+ * cr__is_preferred(R_internal1,R_internal2) :-
+		  not prefer(R_internal1,R_internal3),
+		  not prefer(R_internal3,R_internal1),
+		  cr__is_preferred(R_internal3,R_internal2),
+	  cr__crname(R_internal1),
+	  cr__crname(R_internal2),
+	  cr__crname(R_internal3),
+	  R_internal1 != R_internal2,
+	  R_internal2 != R_internal3,
+	  R_internal1 != R_internal3.
+ */
+	if(ip_transitive){
+		r=create_rule(RULE_REGULAR,1,9);
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->head[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_PREFER);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v3);
+		r->body[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_PREFER);
+		a->args[0]=dup_item(v3);
+		a->args[1]=dup_item(v1);
+		r->body[1]=a;
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v3);
+		a->args[1]=dup_item(v2);
+		r->body[2]=a;
+
+		r->body[3]=dup_item(cr_name1);
+		r->body[4]=dup_item(cr_name2);
+		r->body[5]=dup_item(cr_name3);
+
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->body[6]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v2);
+		a->args[1]=dup_item(v3);
+		r->body[7]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v3);
+		r->body[8]=a;
+
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
+	}
+
+/*	<if pi-transitivity is defined>
+ * cr__is_preferred(R_internal1,R_internal2) :-
+		  not prefer(R_internal2,R_internal3),
+		  not prefer(R_internal3,R_internal2),
+		  cr__is_preferred(R_internal1,R_internal3),
+	  cr__crname(R_internal1),
+	  cr__crname(R_internal2),
+	  cr__crname(R_internal3),
+	  R_internal1 != R_internal2,
+	  R_internal2 != R_internal3,
+	  R_internal1 != R_internal3.
+ */
+	if(pi_transitive){
+		r=create_rule(RULE_REGULAR,1,9);
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->head[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_PREFER);
+		a->args[0]=dup_item(v2);
+		a->args[1]=dup_item(v3);
+		r->body[0]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_PREFER);
+		a->args[0]=dup_item(v3);
+		a->args[1]=dup_item(v2);
+		r->body[1]=a;
+		a=makeitem(2);
+		a->relation=strdup(IS_PREF);
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v3);
+		r->body[2]=a;
+
+		r->body[3]=dup_item(cr_name1);
+		r->body[4]=dup_item(cr_name2);
+		r->body[5]=dup_item(cr_name3);
+
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v2);
+		r->body[6]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v2);
+		a->args[1]=dup_item(v3);
+		r->body[7]=a;
+		a=makeitem(2);
+		a->relation=strdup(NOT_EQ);
+		a->is_infix=1;
+		a->args[0]=dup_item(v1);
+		a->args[1]=dup_item(v3);
+		r->body[8]=a;
+
+		program->next=(struct node *)calloc(1,sizeof(struct node));
+		program=program->next;
+		program->data=r;
+	}
+
 /* <if exclusive>
  * :- cr__appl(R_internal1),cr__appl(R_internal2),
          cr__is_preferred(R_internal1,R_internal2),
@@ -730,12 +856,37 @@ void make_hr(vector<string> flist,string ofile,string efile)
 		<if no special properties (exclusivity, non transitivity)>
 	    :- cr__is_preferred(R_internal,R_internal),cr__crname(R_internal).
 
+		<if no other transitivity is defined>
 	    cr__is_preferred(R_internal1,R_internal2) :-
 	        prefer(R_internal1,R_internal3),
 		cr__is_preferred(R_internal3,R_internal2),
 		cr__crname(R_internal1),
 		cr__crname(R_internal2),
 		cr__crname(R_internal3).
+
+		<if ip-transitivity is defined>
+ 	 	cr__is_preferred(R_internal1,R_internal2) :-
+  	      cr__is_preferred(R_internal3,R_internal2),
+		  not prefer(R_internal1,R_internal3),
+		  not prefer(R_internal3,R_internal1),
+	    cr__crname(R_internal1),
+	    cr__crname(R_internal2),
+	    cr__crname(R_internal3),
+	    R_internal1 != R_internal2,
+	    R_internal2 != R_internal3,
+	    R_internal1 != R_internal3.
+
+	    <if pi-transitivity is defined>
+	    cr__is_preferred(R_internal1,R_internal2) :-
+	 	  cr__is_preferred(R_internal1,R_internal3),
+		  not prefer(R_internal2,R_internal3),
+		  not prefer(R_internal3,R_internal2),
+		cr__crname(R_internal1),
+		cr__crname(R_internal2),
+		cr__crname(R_internal3),
+		R_internal1 != R_internal2,
+		R_internal2 != R_internal3,
+		R_internal1 != R_internal3.
 
 		<if exclusive>
 	    :- cr__appl(R_internal1),cr__appl(R_internal2),
