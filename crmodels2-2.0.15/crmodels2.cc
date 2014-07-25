@@ -241,7 +241,7 @@ int main(int argc,char *argv[])
 	if (cputime_limit_val>0)
 		set_cputime_limit(cputime_limit_val);
 
-	sprintf(s,"bin/hr %s %s %s %s ",
+	sprintf(s,"hr %s %s %s %s ",
 			(non_exclusive ? "--non-exclusive":""),
 			(non_transitive ? "--non-transitive":""),
 			(ip_transitive ? "--ip-transitive":""),
@@ -249,7 +249,7 @@ int main(int argc,char *argv[])
 	for(i=0;i<(int)files.size();i++)
 	{	sprintf(&s[strlen(s)],"%s ",files[i]);
 	}
-	sprintf(&s[strlen(s)],"| %s %s | bin/cr2 --solver \"%s\" %s %s %s %s %s %s %s %d --",
+	sprintf(&s[strlen(s)],"| %s %s | cr2 --solver \"%s\" %s %s %s %s %s %s %s %d --",
 		grounder,
 		gopts,
 		solver,
